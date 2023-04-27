@@ -18,6 +18,7 @@ def liked_songs():
     r = []
     i = 0
     
+    print("liked songs")
     while True:
         results = sp.current_user_saved_tracks(limit=50, offset=i*50)
         for idx, item in enumerate(results['items']):
@@ -48,9 +49,8 @@ def library():
     for playlist in playlists['items']:
         if playlist['owner']['id'] == username:
             # print current playlist
-            print(playlist['name'])
             results = sp.playlist_items(playlist['id'], fields="items.track.name,items.track.artists,items.added_at")
-            print(len(results['items']))
+            print(playlist['name'] + " - " + str(len(results['items'])))
             for item in results['items']:
                 track = item['track']
                 date_added = item['added_at']
@@ -91,6 +91,15 @@ def get_mood_fromtrack(query):
     mood = mood_score(features['danceability'], features['energy'])
     return mood
 
+def save_library():
+    r = library() + liked_songs()
+    for i in range(len(r)):
+        r[i] = r[i][0].replace(",", "") + " " + r[i][1].replace(",", "") + ", " + r[i][2]
+    #write all ids to a .txt file called library.txtM use utf-8 encoding
+    with open("library.txt", "w", encoding="utf-8") as f:
+        for i in r:
+            f.write(i + "\n")
+    
 
 
 def get_calendar():
@@ -104,7 +113,7 @@ def get_calendar():
 
 
 
-get_calendar()
+save_library()
 
 #print(get_mood_fromtrack("Die Alone"))
 
