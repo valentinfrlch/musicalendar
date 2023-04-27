@@ -7,6 +7,8 @@ from spotipy.oauth2 import SpotifyOAuth
 import datetime
 import json
 
+import visualizers as vis
+
 
 client_id = open(".secrets/spotify/client_id", "r").read()
 client_secret = open(".secrets/spotify/client_secret", "r").read()
@@ -173,8 +175,26 @@ def average_mood():
                 g.write('"' + date + '": ' + str(avg) + ',\n')
         g.write("}")
 
+#----------------------------------PLOTTING HELPERS----------------------------------
+
+def plot_average():
+    # read the data and convert it to a list with tuples of (date, mood)
+    f = open("average_mood_data.json", "r")
+    j = json.loads(f.read())
+    data = []
+    for date in j:
+        data.append((date, j[date]))
+    
+    # sort the data by date
+    data.sort(key=lambda x: datetime.datetime.strptime(x[0], '%Y-%m-%d'))
+    
+    # call the visualizer function
+    vis.average_mood(data)
+
         
-average_mood()
+        
+        
+plot_average()
 
 #print(get_mood_fromtrack("Die Alone"))
 
