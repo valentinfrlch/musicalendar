@@ -1,9 +1,11 @@
 # connect to spotify api
 
 import spotipy
-import time
+import time, os
 from ical_integration import main as ical_main
 from spotipy.oauth2 import SpotifyOAuth
+import datetime
+import json
 
 
 client_id = open(".secrets/spotify/client_id", "r").read()
@@ -108,15 +110,51 @@ def get_calendar():
     ical_main(r)
 
 
+def library_to_mood():
+    # read the library.txt file and get the mood of each song
+    # if it doesnt exist, create it
+    if not os.path.exists("library.txt"):
+        save_library()
+    # read the file
+    f = open("library.txt", "r", encoding="utf-8")
+    tracks = f.readlines()
+    
+    mood_data = {}
+    # in the end we want something like this:
+    # {'2023-04-05': [0.51, 0.43, 0.78, ...]}
+    
+    for track in tracks:
+        try:
+            # print the progress
+            i = tracks.index(track)
+            track_name = track.split(",")[0].strip()
+            track_date = str(track.split(",")[1].replace("\n", "").strip().split("T")[0])
+            # check if key exists
+            if track_date not in mood_data:
+                mood_data[track_date] = [get_mood_fromtrack(track_name)]
+                print(str(i) + "/" + str(len(tracks)) + "   created a new key at " + track_date + " with value " + str(mood_data[track_date]))
+            else:
+                mood_data[track_date].append(get_mood_fromtrack(track_name))
+                print(str(i) + "/" + str(len(tracks)) + "   date already exists, added " + str(get_mood_fromtrack(track_name)) + " to " + track_date)
+        except Exception as e:
+            print(e)
+            continue
+    
+    print("saving to file...")
+        
+    # save to file
+    j = json.dumps(mood_data)
+    f = open("mood_data.json","w")
+    f.write(j)
+    f.close()
+        
+    # print(mood_data)
 
-
-
-
-
-save_library()
+        
+library_to_mood()
 
 #print(get_mood_fromtrack("Die Alone"))
 
 
 #if __name__ == "__main__":
-#    main()
+#    pass
