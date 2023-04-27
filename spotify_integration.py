@@ -115,6 +115,9 @@ def library_to_mood():
     # if it doesnt exist, create it
     if not os.path.exists("library.txt"):
         save_library()
+    if os.path.exists("mood_data.json"):
+        print("mood_data.json already exists, skipping...")
+        return
     # read the file
     f = open("library.txt", "r", encoding="utf-8")
     tracks = f.readlines()
@@ -148,10 +151,30 @@ def library_to_mood():
     f.write(j)
     f.close()
         
-    # print(mood_data)
+        
+
+def average_mood():
+    # read the mood_data.json file and get the average mood of each day
+    # read the json
+    f = open("mood_data.json", "r")
+    j = json.loads(f.read())
+    
+    with open("average_mood_data.json", "w") as g:
+        g.write("{\n")
+        # for each key, get the average of the values
+        for date in j:
+            islast = True if date == list(j.keys())[-1] else False
+            # get the average of list
+            avg = sum(j[date]) / len(j[date])
+            # write to file
+            if islast:
+                g.write('"' + date + '": ' + str(avg) + '\n')
+            else:
+                g.write('"' + date + '": ' + str(avg) + ',\n')
+        g.write("}")
 
         
-library_to_mood()
+average_mood()
 
 #print(get_mood_fromtrack("Die Alone"))
 
