@@ -14,7 +14,7 @@ client_id = open(".secrets/spotify/client_id", "r").read()
 client_secret = open(".secrets/spotify/client_secret", "r").read()
 
 
-def liked_songs():
+def liked_songs(start_date=None, end_date=None):
     scope = "user-library-read"
 
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id, client_secret=client_secret, redirect_uri="http://127.0.0.1:9090"))
@@ -38,7 +38,7 @@ def liked_songs():
     return r
     
 
-def library():
+def library(start_date=None, end_date=None):
     # get all playlist in the users library
     scope = "playlist-read-private"
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(scope=scope, client_id=client_id, client_secret=client_secret, redirect_uri="http://127.0.0.1:9090"))
@@ -96,13 +96,23 @@ def get_mood_fromtrack(query):
     return mood
 
 def save_library():
-    r = library() + liked_songs()
-    for i in range(len(r)):
-        r[i] = r[i][0].replace(",", "") + " " + r[i][1].replace(",", "") + ", " + r[i][2]
-    #write all ids to a .txt file called library.txtM use utf-8 encoding
-    with open("library.txt", "w", encoding="utf-8") as f:
-        for i in r:
-            f.write(i + "\n")
+    if os.path.exists("library.txt"):
+        # read last date
+        with open("library.txt", "r", encoding="utf-8") as f:
+            lines = f.readlines()
+            for l in lines:
+                if l.startswith("DTEND"):
+                    last_date = l.split(":")[1].replace("\n", "").strip() #20230418
+                    
+        pass
+    else:
+        r = library() + liked_songs()
+        for i in range(len(r)):
+            r[i] = r[i][0].replace(",", "") + " " + r[i][1].replace(",", "") + ", " + r[i][2]
+        #write all ids to a .txt file called library.txt use utf-8 encoding
+        with open("library.txt", "w", encoding="utf-8") as f:
+            for i in r:
+                f.write(i + "\n")
     
 
 
@@ -192,9 +202,7 @@ def plot_average():
     vis.average_mood(data)
 
         
-        
-        
-plot_average()
+
 
 #print(get_mood_fromtrack("Die Alone"))
 
